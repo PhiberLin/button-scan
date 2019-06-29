@@ -1,0 +1,83 @@
+C51 COMPILER V9.60.0.0   BUTTON                                                            06/29/2019 23:57:47 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE BUTTON
+OBJECT MODULE PLACED IN .\Objects\button.obj
+COMPILER INVOKED BY: D:\Program Files\Keil_v5\C51\BIN\C51.EXE button.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT
+                    -(.\Listings\button.lst) TABS(2) OBJECT(.\Objects\button.obj)
+
+line level    source
+
+   1          #include <reg52.h>
+   2          #include <intrins.h>
+   3          #include <math.h>
+   4          
+   5          typedef unsigned char byte;
+   6          
+   7          /*******************************
+   8          名称：scanKey
+   9          描述：扫描独立键盘及矩阵键盘，若某键被按下则返回该键键值，
+  10                若没有键被按下，则返回0，无法识别键值则返回1
+  11          返回值：unsigned char型
+  12          *******************************/
+  13          byte scanKey(void)
+  14          {
+  15   1        byte key,value,x,y;
+  16   1      //---------独立键盘扫描开始---------
+  17   1        P3 = 0xFF;
+  18   1        if(P3 != 0xFF)
+  19   1        {
+  20   2          key = P3;
+  21   2          while(P3 != 0xFF)//松手检测
+  22   2            P3 = 0xFF;
+  23   2          switch(key)//读取键值
+  24   2          {
+  25   3            case  0xFE: value = 2;  break;
+  26   3            case  0xFD: value = 3;  break;
+  27   3            case  0xFB: value = 4;  break;
+  28   3            case  0xF7: value = 5;  break;
+  29   3            default:    value = 1;
+  30   3          }
+  31   2          return value;
+  32   2        }
+  33   1      //---------独立键盘扫描结束------------
+  34   1        
+  35   1      //---------矩阵键盘扫描开始------------
+  36   1        P3 = 0xF0;//行扫描
+  37   1        if(P3 != 0xF0)
+  38   1        {
+  39   2          key = P3;
+  40   2          key |= 0x0F;
+  41   2          key = ~key;
+  42   2          y = log(key)/log(2) -4;
+  43   2          P3 = 0x0F;//列扫描
+  44   2          if(P3 == 0x0F)
+  45   2            return 0;
+  46   2          key = P3;
+  47   2          key |= 0xF0;
+  48   2          key = ~key;
+  49   2          x = log(key)/log(2);    
+  50   2          value = x*4 + y +6;//键值计算
+  51   2          while(P3 != 0x0F)//松手检测
+  52   2            P3 = 0x0F;    
+  53   2          return value;
+  54   2        }
+C51 COMPILER V9.60.0.0   BUTTON                                                            06/29/2019 23:57:47 PAGE 2   
+
+  55   1      //--------矩阵键盘扫描结束-------------
+  56   1        return 0;
+  57   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    250    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       3
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
